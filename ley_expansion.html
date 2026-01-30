@@ -3,162 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anexo: Dilatación Térmica Diferencial</title>
+    <title>Anexo: Simulador de Dilatación Térmica</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
         .container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Estilos de Títulos */
         h1 { color: #c0392b; border-bottom: 3px solid #c0392b; padding-bottom: 10px; margin-top: 0; }
         h3 { color: #2c3e50; margin-top: 30px; border-left: 5px solid #2c3e50; padding-left: 10px; }
         
         /* Sección Teórica */
-        .formula-box {
-            background-color: #eef2f7;
-            border: 1px solid #bdc3c7;
-            padding: 15px;
-            margin: 20px 0;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1.3em;
-            text-align: center;
-            font-weight: bold;
-            color: #2c3e50;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
-        }
-        
+        .formula-box { background-color: #eef2f7; border: 1px solid #bdc3c7; padding: 15px; margin: 20px 0; font-family: 'Courier New', Courier, monospace; font-size: 1.3em; text-align: center; font-weight: bold; color: #2c3e50; }
         .variables { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 30px; }
         .variable-item { background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-size: 0.9em; }
-        .variable-item strong { color: #c0392b; }
+        
+        /* Simulador */
+        .simulator { background-color: #222; color: white; padding: 25px; border-radius: 10px; margin-top: 20px; }
+        
+        /* Panel de Datos */
+        .data-panel { display: flex; justify-content: space-between; margin-bottom: 10px; font-family: monospace; font-size: 0.9em; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; }
+        .data-value { color: #4cd137; font-weight: bold; }
+        .data-bad { color: #e74c3c; font-weight: bold; }
 
-        /* Estilos del Simulador */
-        .simulator { background-color: #222; color: white; padding: 25px; border-radius: 10px; margin-top: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .bar-container { margin: 25px 0; position: relative; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
         
-        .bar-container { margin: 20px 0; position: relative; }
-        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px; color: #aaa; }
-        .bar { height: 45px; border-radius: 4px; transition: width 0.1s linear; display: flex; align-items: center; padding-left: 10px; font-weight: bold; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
+        .bar-bg { width: 100%; height: 45px; background: #444; border-radius: 4px; overflow: hidden; position: relative; }
+        .bar { height: 100%; display: flex; align-items: center; padding-left: 10px; font-weight: bold; font-size: 0.85em; white-space: nowrap; transition: width 0.1s linear; }
         
-        .piston { background: linear-gradient(90deg, #e74c3c, #c0392b); width: 80%; box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
-        .liner { background: linear-gradient(90deg, #95a5a6, #7f8c8d); width: 80.8%; border: 1px solid #555; opacity: 0.9; } 
+        .piston { background: linear-gradient(90deg, #e74c3c, #c0392b); width: 50%; }
+        .liner { background: linear-gradient(90deg, #95a5a6, #7f8c8d); width: 50.8%; border-right: 2px solid #fff; } 
         
+        /* Controles */
         .controls { margin-top: 25px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 5px; }
         input[type=range] { width: 100%; cursor: pointer; margin: 15px 0; }
         
         .status-box { margin-top: 25px; padding: 20px; text-align: center; font-weight: bold; font-size: 1.2em; border-radius: 5px; text-transform: uppercase; border: 2px solid transparent; transition: all 0.3s ease; }
         
-        .normal { background-color: #27ae60; color: white; border-color: #2ecc71; }
-        .warning { background-color: #f39c12; color: black; border-color: #f1c40f; animation: pulse-slow 2s infinite; }
-        .critical { background-color: #e74c3c; color: white; border-color: #c0392b; animation: shake 0.5s infinite; }
-        .melted { background-color: #2c3e50; color: #e74c3c; border: 2px dashed #e74c3c; }
+        .normal { background-color: #27ae60; color: white; }
+        .warning { background-color: #f39c12; color: black; animation: pulse 2s infinite; }
+        .critical { background-color: #c0392b; color: white; animation: shake 0.5s infinite; }
 
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
-        @keyframes pulse-slow { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Anexo Técnico: Falla por Dilatación Térmica</h1>
-    <p>Este modelo digital explica el fenómeno físico responsable de la falla catastrófica en los motores ALCO 251. Se demuestra cómo la diferencia de propiedades térmicas entre el aluminio y el acero elimina las tolerancias de diseño bajo condiciones críticas.</p>
+    <h1>Anexo Técnico: Dilatación Diferencial</h1>
+    <p>Simulador numérico basado en los coeficientes reales de los materiales. Observe cómo el diámetro del pistón crece proporcionalmente más rápido que el de la camisa, consumiendo la holgura de diseño.</p>
 
     <h3>1. Fundamento Matemático</h3>
-    <p>La expansión del material se rige por la Ley de Expansión Térmica Lineal:</p>
-    
-    <div class="formula-box">
-        ΔL = α · L₀ · ΔT
-    </div>
-
+    <div class="formula-box">ΔL = α · L₀ · ΔT</div>
     <div class="variables">
-        <div class="variable-item"><strong>ΔL</strong> (Cambio en longitud): El aumento en el diámetro del pistón.</div>
-        <div class="variable-item"><strong>α</strong> (Coeficiente): Aluminio (23µm) vs Acero (12µm).</div>
-        <div class="variable-item"><strong>L₀</strong> (Longitud inicial): Diámetro original en frío.</div>
-        <div class="variable-item"><strong>ΔT</strong> (Delta T): Aumento de temperatura por fricción/combustión.</div>
+        <div class="variable-item"><strong>Material Pistón:</strong> Aluminio (α = 23 x 10⁻⁶)</div>
+        <div class="variable-item"><strong>Material Camisa:</strong> Acero (α = 12 x 10⁻⁶)</div>
+        <div class="variable-item"><strong>Diámetro Base (L₀):</strong> 250.00 mm</div>
     </div>
 
-    <h3>2. Simulación de Falla (Conflicto de Materiales)</h3>
-    <p>Utilice el deslizador para simular el aumento de temperatura en los componentes. Observe cómo el Aluminio se expande casi al doble de velocidad que el Acero.</p>
-
+    <h3>2. Simulador de Holgura</h3>
     <div class="simulator">
-        <div class="bar-container">
-            <div class="bar-label">
-                <span>DIÁMETRO CAMISA (ACERO)</span>
-                <span id="val-liner">0.00 mm</span>
-            </div>
-            <div class="bar liner" id="bar-liner">CAMISA ESTATICA</div>
+        
+        <div class="bar-label">CAMISA (ACERO)</div>
+        <div class="data-panel">
+            <span>Expansión: <span id="txt-exp-liner" class="data-value">+0.00 mm</span></span>
+            <span>Diámetro Actual: <span id="txt-dia-liner">250.80 mm</span></span>
+            <span>Tasa: 12 µm/°C</span>
+        </div>
+        <div class="bar-bg">
+            <div class="bar liner" id="bar-liner" style="width: 50.8%;"></div>
         </div>
 
-        <div class="bar-container">
-            <div class="bar-label">
-                <span>DIÁMETRO PISTÓN (ALUMINIO)</span>
-                <span id="val-piston">0.00 mm</span>
-            </div>
-            <div class="bar piston" id="bar-piston">PISTÓN EN EXPANSIÓN</div>
-        </div>
+        <br>
 
-        <div class="status-box normal" id="status-box">
-            ESTADO: OPERACIÓN NORMAL
+        <div class="bar-label">PISTÓN (ALUMINIO)</div>
+        <div class="data-panel">
+            <span>Expansión: <span id="txt-exp-piston" class="data-value">+0.00 mm</span></span>
+            <span>Diámetro Actual: <span id="txt-dia-piston">250.00 mm</span></span>
+            <span>Tasa: 23 µm/°C</span>
+        </div>
+        <div class="bar-bg">
+            <div class="bar piston" id="bar-piston" style="width: 50.0%;"></div>
         </div>
 
         <div class="controls">
-            <label style="font-size: 1.1em; color: #ddd;">Temperatura del Componente: <span id="temp-display" style="color: #3498db; font-weight: bold;">25</span> °C</label>
-            <input type="range" id="temp-slider" min="25" max="700" value="25" step="5">
-            <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666;">
-                <span>25°C (Ambiente)</span>
-                <span>350°C (Riesgo)</span>
-                <span>660°C (Fusión Al)</span>
+            <label style="color: #ddd;">Temperatura Operativa: <span id="temp-display" style="color: #3498db; font-weight: bold; font-size: 1.2em;">25</span> °C</label>
+            <input type="range" id="temp-slider" min="25" max="700" value="25" step="1">
+            
+            <div style="text-align: right; font-family: monospace; margin-top: 10px;">
+                HOLGURA RESTANTE: <span id="txt-holgura" style="font-size: 1.4em; font-weight: bold;">+0.80 mm</span>
             </div>
         </div>
+
+        <div class="status-box normal" id="status-box">OPERACIÓN SEGURA</div>
     </div>
 </div>
 
 <script>
     const slider = document.getElementById('temp-slider');
     const tempDisplay = document.getElementById('temp-display');
+    const statusBox = document.getElementById('status-box');
+    
+    // Elementos visuales (Barras)
     const barPiston = document.getElementById('bar-piston');
     const barLiner = document.getElementById('bar-liner');
-    const statusBox = document.getElementById('status-box');
+    
+    // Elementos de texto (Datos numéricos)
+    const txtExpPiston = document.getElementById('txt-exp-piston');
+    const txtDiaPiston = document.getElementById('txt-dia-piston');
+    const txtExpLiner = document.getElementById('txt-exp-liner');
+    const txtDiaLiner = document.getElementById('txt-dia-liner');
+    const txtHolgura = document.getElementById('txt-holgura');
 
-    // Configuración Física (Simulada para visualización)
-    const basePiston = 80.0; 
-    const baseLiner = 80.8; 
-    const alphaAl = 0.004; 
-    const alphaFe = 0.0018; 
+    // CONSTANTES DE INGENIERÍA
+    const L0 = 250.00; // Diámetro base en mm
+    const alphaAl = 0.000023; // Coeficiente Aluminio
+    const alphaFe = 0.000012; // Coeficiente Acero
+    const holguraInicial = 0.80; // mm de espacio libre inicial
 
     function updateSimulation() {
         let temp = parseInt(slider.value);
-        tempDisplay.textContent = temp;
+        let deltaT = temp - 25; // Diferencia desde T ambiente
         
-        let r = Math.min(255, (temp / 3));
-        let b = Math.max(0, 255 - (temp / 2));
-        tempDisplay.style.color = `rgb(${r}, 50, ${b})`;
+        // --- CÁLCULOS MATEMÁTICOS REALES ---
+        
+        // 1. Calcular expansión en mm (Formula: L0 * alpha * deltaT)
+        let expansionPiston = L0 * alphaAl * deltaT;
+        let expansionLiner = L0 * alphaFe * deltaT;
+        
+        // 2. Calcular diámetros finales
+        let diaPiston = L0 + expansionPiston;
+        let diaLiner = (L0 + holguraInicial) + expansionLiner;
+        
+        // 3. Calcular Holgura restante
+        let holgura = diaLiner - diaPiston;
 
-        let deltaT = temp - 25; 
-        let widthPiston = basePiston + (deltaT * alphaAl);
-        let widthLiner = baseLiner + (deltaT * alphaFe);
+        // --- ACTUALIZACIÓN VISUAL ---
+        
+        // Actualizar Textos
+        tempDisplay.textContent = temp;
+        txtExpPiston.textContent = "+" + expansionPiston.toFixed(3) + " mm";
+        txtDiaPiston.textContent = diaPiston.toFixed(3) + " mm";
+        
+        txtExpLiner.textContent = "+" + expansionLiner.toFixed(3) + " mm";
+        txtDiaLiner.textContent = diaLiner.toFixed(3) + " mm";
+        
+        txtHolgura.textContent = (holgura > 0 ? "+" : "") + holgura.toFixed(3) + " mm";
+
+        // Actualizar Ancho de Barras (Visualmente exagerado para notar el efecto)
+        // Usamos un factor de escala visual (x50) para que los mm se vean en pantalla
+        let escalaVisual = 0.04; 
+        let anchoBaseVisual = 50; // %
+        
+        let widthPiston = anchoBaseVisual + (expansionPiston * escalaVisual * 100);
+        let widthLiner = (anchoBaseVisual + (holguraInicial * escalaVisual * 100)) + (expansionLiner * escalaVisual * 100);
 
         barPiston.style.width = widthPiston + '%';
         barLiner.style.width = widthLiner + '%';
 
+        // --- LÓGICA DE ESTADOS ---
         if (temp >= 650) {
-            statusBox.innerHTML = "¡FALLA TOTAL! PUNTO DE FUSIÓN ALCANZADO (PISTÓN DERRITIDO)";
-            statusBox.className = "status-box melted";
-            barPiston.style.opacity = "0.5";
-        } else if (widthPiston >= widthLiner + 0.2) {
-            statusBox.innerHTML = "¡CRÍTICO! ATASCO SEVERO Y FRACTURA INMINENTE";
+            statusBox.innerHTML = "¡PUNTO DE FUSIÓN! PISTÓN DESTRUIDO";
             statusBox.className = "status-box critical";
-            barPiston.style.opacity = "1";
-        } else if (widthPiston >= widthLiner - 0.1) {
-            statusBox.innerHTML = "PELIGRO: PÉRDIDA TOTAL DE HOLGURA (FRICCIÓN EXTREMA)";
+            txtHolgura.style.color = "#c0392b";
+        } else if (holgura <= 0) {
+            statusBox.innerHTML = "¡COLISIÓN! (GRIPADO DE MOTOR)";
+            statusBox.className = "status-box critical";
+            txtHolgura.style.color = "#c0392b";
+            txtHolgura.textContent = "COLISIÓN (" + holgura.toFixed(3) + " mm)";
+        } else if (holgura < 0.2) {
+            statusBox.innerHTML = "PELIGRO: LUBRICACIÓN INSUFICIENTE";
             statusBox.className = "status-box warning";
-            barPiston.style.opacity = "1";
+            txtHolgura.style.color = "#f39c12";
         } else {
-            statusBox.innerHTML = "ESTADO: OPERACIÓN NORMAL (Holgura Segura)";
+            statusBox.innerHTML = "OPERACIÓN SEGURA";
             statusBox.className = "status-box normal";
-            barPiston.style.opacity = "1";
+            txtHolgura.style.color = "#27ae60";
         }
     }
 
     slider.addEventListener('input', updateSimulation);
-    updateSimulation();
+    updateSimulation(); // Inicio
 </script>
 
 </body>
