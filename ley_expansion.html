@@ -3,19 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anexo: Dilatación Térmica Crítica</title>
+    <title>Anexo: Dilatación Térmica Diferencial</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
-        .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #c0392b; border-bottom: 3px solid #c0392b; padding-bottom: 10px; }
+        .container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
+        /* Estilos de Títulos */
+        h1 { color: #c0392b; border-bottom: 3px solid #c0392b; padding-bottom: 10px; margin-top: 0; }
+        h3 { color: #2c3e50; margin-top: 30px; border-left: 5px solid #2c3e50; padding-left: 10px; }
+        
+        /* Sección Teórica */
+        .formula-box {
+            background-color: #eef2f7;
+            border: 1px solid #bdc3c7;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3em;
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+        
+        .variables { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 30px; }
+        .variable-item { background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 5px; font-size: 0.9em; }
+        .variable-item strong { color: #c0392b; }
+
+        /* Estilos del Simulador */
         .simulator { background-color: #222; color: white; padding: 25px; border-radius: 10px; margin-top: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         
         .bar-container { margin: 20px 0; position: relative; }
         .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px; color: #aaa; }
         .bar { height: 45px; border-radius: 4px; transition: width 0.1s linear; display: flex; align-items: center; padding-left: 10px; font-weight: bold; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Colores y Tamaños Base */
         .piston { background: linear-gradient(90deg, #e74c3c, #c0392b); width: 80%; box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
         .liner { background: linear-gradient(90deg, #95a5a6, #7f8c8d); width: 80.8%; border: 1px solid #555; opacity: 0.9; } 
         
@@ -24,7 +45,6 @@
         
         .status-box { margin-top: 25px; padding: 20px; text-align: center; font-weight: bold; font-size: 1.2em; border-radius: 5px; text-transform: uppercase; border: 2px solid transparent; transition: all 0.3s ease; }
         
-        /* Estados */
         .normal { background-color: #27ae60; color: white; border-color: #2ecc71; }
         .warning { background-color: #f39c12; color: black; border-color: #f1c40f; animation: pulse-slow 2s infinite; }
         .critical { background-color: #e74c3c; color: white; border-color: #c0392b; animation: shake 0.5s infinite; }
@@ -38,10 +58,26 @@
 
 <div class="container">
     <h1>Anexo Técnico: Falla por Dilatación Térmica</h1>
-    <p>Simulación del comportamiento metalúrgico del pistón (Aluminio) frente a la camisa (Acero) en condiciones de sobrecalentamiento. Se observa cómo el coeficiente de expansión térmica del aluminio (α ≈ 23µm/m°C) supera al del acero (α ≈ 12µm/m°C), eliminando la holgura operativa.</p>
+    <p>Este modelo digital explica el fenómeno físico responsable de la falla catastrófica en los motores ALCO 251. Se demuestra cómo la diferencia de propiedades térmicas entre el aluminio y el acero elimina las tolerancias de diseño bajo condiciones críticas.</p>
+
+    <h3>1. Fundamento Matemático</h3>
+    <p>La expansión del material se rige por la Ley de Expansión Térmica Lineal:</p>
+    
+    <div class="formula-box">
+        ΔL = α · L₀ · ΔT
+    </div>
+
+    <div class="variables">
+        <div class="variable-item"><strong>ΔL</strong> (Cambio en longitud): El aumento en el diámetro del pistón.</div>
+        <div class="variable-item"><strong>α</strong> (Coeficiente): Aluminio (23µm) vs Acero (12µm).</div>
+        <div class="variable-item"><strong>L₀</strong> (Longitud inicial): Diámetro original en frío.</div>
+        <div class="variable-item"><strong>ΔT</strong> (Delta T): Aumento de temperatura por fricción/combustión.</div>
+    </div>
+
+    <h3>2. Simulación de Falla (Conflicto de Materiales)</h3>
+    <p>Utilice el deslizador para simular el aumento de temperatura en los componentes. Observe cómo el Aluminio se expande casi al doble de velocidad que el Acero.</p>
 
     <div class="simulator">
-        
         <div class="bar-container">
             <div class="bar-label">
                 <span>DIÁMETRO CAMISA (ACERO)</span>
@@ -82,30 +118,26 @@
     const statusBox = document.getElementById('status-box');
 
     // Configuración Física (Simulada para visualización)
-    const basePiston = 80.0; // % ancho base
-    const baseLiner = 80.8; // % ancho base (0.8% de holgura inicial)
-    const alphaAl = 0.004; // Factor visual exagerado para Al
-    const alphaFe = 0.0018; // Factor visual exagerado para Fe
+    const basePiston = 80.0; 
+    const baseLiner = 80.8; 
+    const alphaAl = 0.004; 
+    const alphaFe = 0.0018; 
 
     function updateSimulation() {
         let temp = parseInt(slider.value);
         tempDisplay.textContent = temp;
         
-        // Color dinámico de temperatura
         let r = Math.min(255, (temp / 3));
         let b = Math.max(0, 255 - (temp / 2));
         tempDisplay.style.color = `rgb(${r}, 50, ${b})`;
 
-        // Cálculo de expansión
-        let deltaT = temp - 25; // Delta desde ambiente
+        let deltaT = temp - 25; 
         let widthPiston = basePiston + (deltaT * alphaAl);
         let widthLiner = baseLiner + (deltaT * alphaFe);
 
-        // Actualizar gráfico
         barPiston.style.width = widthPiston + '%';
         barLiner.style.width = widthLiner + '%';
 
-        // Lógica de Estados
         if (temp >= 650) {
             statusBox.innerHTML = "¡FALLA TOTAL! PUNTO DE FUSIÓN ALCANZADO (PISTÓN DERRITIDO)";
             statusBox.className = "status-box melted";
