@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anexo: Ley de Expansión Térmica</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h3 { color: #2980b9; margin-top: 30px;}
+        
+        .formula-box {
+            background-color: #eef2f7;
+            border-left: 5px solid #2980b9;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2em;
+            text-align: center;
+        }
+        
+        .variables {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .variable-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        /* Estilos del Simulador */
+        .simulator {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        .bar-container {
+            margin: 15px 0;
+        }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px;}
+        .bar {
+            height: 40px;
+            border-radius: 4px;
+            transition: width 0.1s ease-out;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        .piston { background-color: #e74c3c; width: 80%; } /* Aluminio */
+        .liner { background-color: #95a5a6; width: 81%; } /* Acero (un poco más grande al inicio) */
+        
+        .controls {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        input[type=range] { width: 100%; cursor: pointer; }
+        
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 5px;
+            background-color: #27ae60; /* Verde inicial */
+        }
+        .alert { background-color: #c0392b; animation: pulse 1s infinite; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Anexo Técnico: Dilatación Térmica Diferencial</h1>
+    <p>Este anexo explica el fenómeno físico responsable de la falla catastrófica en los motores ALCO 251 (Caso British Forager). Se demuestra cómo la diferencia en los coeficientes de expansión entre materiales provoca la pérdida de tolerancias mecánicas.</p>
+
+    <h3>1. Fundamento Matemático</h3>
+    <p>La expansión térmica lineal se describe mediante la ecuación:</p>
+    
+    <div class="formula-box">
+        ΔL = α · L₀ · ΔT
+    </div>
+
+    <div class="variables">
+        <div class="variable-item"><strong>ΔL:</strong> Cambio en longitud (o diámetro)</div>
+        <div class="variable-item"><strong>α (Alpha):</strong> Coeficiente de expansión térmica</div>
+        <div class="variable-item"><strong>L₀:</strong> Longitud inicial</div>
+        <div class="variable-item"><strong>ΔT:</strong> Aumento de temperatura</div>
+    </div>
+
+    <h3>2. El Conflicto de Materiales (Simulador)</h3>
+    <p>El <strong>Pistón</strong> está hecho de aleación de Aluminio (α ≈ 23 x 10⁻⁶/°C), mientras que la <strong>Camisa</strong> es de Acero (α ≈ 12 x 10⁻⁶/°C). A medida que la temperatura sube por falta de lubricación o fricción, el pistón crece casi al doble de velocidad que la camisa.</p>
+
+    <div class="simulator">
+        <h4>Simulación de Pérdida de Holgura</h4>
+        
+        <div class="bar-container">
+            <div class="bar-label">
+                <span>Diámetro Camisa (Acero)</span>
+                <span id="val-liner"></span>
+            </div>
+            <div class="bar liner" id="bar-liner">Acero (Expansión Lenta)</div>
+        </div>
+
+        <div class="bar-container">
+            <div class="bar-label">
+                <span>Diámetro Pistón (Aluminio)</span>
+                <span id="val-piston"></span>
+            </div>
+            <div class="bar piston" id="bar-piston">Aluminio (Expansión Rápida)</div>
+        </div>
+
+        <div class="status-box" id="status-box">
+            ESTADO: OPERACIÓN NORMAL (Holgura Segura)
+        </div>
+
+        <div class="controls">
+            <label>Aumento de Temperatura (ΔT): <span id="temp-display">0</span> °C</label>
+            <input type="range" id="temp-slider" min="0" max="400" value="0">
+            <small>Desliza para simular el sobrecalentamiento</small>
+        </div>
+    </div>
+
+    <h3>3. Conclusión Técnica</h3>
+    <p>Como se observa en la simulación, al superar cierta temperatura crítica (ΔT), el diámetro del pistón iguala y supera al de la camisa. Físicamente, esto es imposible sin deformación, lo que resulta en:</p>
+    <ul>
+        <li>Atasco del pistón (Seizure).</li>
+        <li>Fractura de la biela por inercia del cigüeñal.</li>
+        <li>Destrucción del bloque motor (Falla Catastrófica).</li>
+    </ul>
+</div>
+
+<script>
+    const slider = document.getElementById('temp-slider');
+    const tempDisplay = document.getElementById('temp-display');
+    const barPiston = document.getElementById('bar-piston');
+    const barLiner = document.getElementById('bar-liner');
+    const statusBox = document.getElementById('status-box');
+    const valPiston = document.getElementById('val-piston');
+    const valLiner = document.getElementById('val-liner');
+
+    // Valores base (simulados en pixeles para visualización)
+    const baseSize = 80; // % ancho base
+    const gap = 2.0; // % holgura inicial
+    
+    // Coeficientes exagerados para visualización web
+    const alphaAl = 0.05; 
+    const alphaFe = 0.025; 
+
+    function updateSimulation() {
+        let temp = parseInt(slider.value);
+        tempDisplay.textContent = temp;
+
+        // Calculamos nuevo ancho
+        let growthPiston = temp * alphaAl;
+        let growthLiner = temp * alphaFe;
+
+        let widthPiston = baseSize + growthPiston;
+        let widthLiner = (baseSize + gap) + growthLiner;
+
+        // Aplicamos al DOM
+        barPiston.style.width = widthPiston + '%';
+        barLiner.style.width = widthLiner + '%';
+
+        // Mostramos valores relativos
+        valPiston.innerText = "Dilatación: +" + growthPiston.toFixed(1) + "%";
+        valLiner.innerText = "Dilatación: +" + growthLiner.toFixed(1) + "%";
+
+        // Lógica de Colisión (Falla)
+        if (widthPiston >= widthLiner) {
+            statusBox.innerHTML = "¡ALERTA CRÍTICA! FALLA CATASTRÓFICA (PISTÓN ATASCADO)";
+            statusBox.className = "status-box alert";
+            statusBox.style.backgroundColor = "#c0392b";
+        } else if (widthPiston >= widthLiner - 1) {
+            statusBox.innerHTML = "ADVERTENCIA: PÉRDIDA DE LUBRICACIÓN (Fricción Extrema)";
+            statusBox.className = "status-box";
+            statusBox.style.backgroundColor = "#e67e22";
+        } else {
+            statusBox.innerHTML = "ESTADO: OPERACIÓN NORMAL (Holgura Segura)";
+            statusBox.className = "status-box";
+            statusBox.style.backgroundColor = "#27ae60";
+        }
+    }
+
+    slider.addEventListener('input', updateSimulation);
+    updateSimulation(); // Init
+</script>
+
+</body>
+</html>
